@@ -1,0 +1,64 @@
+import pygame
+import random
+import time
+class Ball(pygame.sprite.Sprite):
+    image = None
+    virtx = virtxdefault = 0.1
+    def __init__(self,parent):
+        pygame.sprite.Sprite.__init__(self, parent.sprites)
+        if self.image is None:
+            self.image = pygame.image.load("graphics/ball.png").convert()
+            self.image.set_colorkey((255,0,0))
+        self.rect = self.image.get_rect()
+        self.parent = parent
+        #print dir(self.rect)
+    def setCenter(self, pos):
+        self.rect.center = pos
+    def update(self):
+        self.virtx += 0.05
+        self.rect.y += self.virtx
+        if pygame.sprite.spritecollideany(self,self.parent.playergroup) or \
+            self.rect.y > self.parent.screenres[1]:
+            self.virtx = self.virtxdefault
+            random.seed(time.time())
+            pipe = random.choice(self.parent.pipes)
+            self.setCenter(pipe.rect.center)
+        
+class Pipe(pygame.sprite.Sprite):
+    image = None
+    def __init__(self,parent):
+        pygame.sprite.Sprite.__init__(self, parent.sprites)
+        if self.image is None:
+            self.image = pygame.image.load("graphics/pipe.png").convert()
+            self.image.set_colorkey((255,0,0))
+        self.rect = self.image.get_rect()
+        self.parent = parent
+        
+    def setLeft(self, pos):
+        self.rect.left = pos
+    def getLeft(self):
+        return self.rect.left
+        
+class Player(pygame.sprite.Sprite):
+    def __init__(self,parent):
+        pygame.sprite.Sprite.__init__(self, parent.sprites)
+        self.image = pygame.Surface((50, 25))
+        self.image.fill(75)
+        self.rect = self.image.get_rect()
+        self.rect.center = (400,500)
+        self.parent = parent
+    def update(self):
+        pos = pygame.mouse.get_pos()
+        if pos[1] > 450:
+            self.rect.center = pos
+            self.parent.SendData([self.parent.playerno,self.rect.x,self.rect.y]) # Send Data to Server
+        
+class Other(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self, self.containers)
+        self.image = pygame.Surface((50, 25))
+        self.image.fill(80)
+        self.rect = self.image.get_rect()
+
+    def setCenter(self, pos):
+        self.rect.center = pos
